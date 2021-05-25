@@ -75,7 +75,10 @@ public class PedidoRest {
     }
 
     //FALTA GET Por Cuit y/o ID de Cliente
-    @GetMapping(path = "/cuitIdCliente")
+    /**
+     * Arreglar exchange
+     */
+    /*@GetMapping(path = "/cuitIdCliente")
     @ApiOperation(value = "Busca una lista de pedidos por cuit de cliente y/o ID de cliente. example:http://localhost:8080/api/pedido/cuitIdCliente?cuit=20406461272 ")
     @ResponseBody
     public ResponseEntity<List<Pedido>> pedidoPorCuitOIdCliente(@RequestParam(required = false) String cuit, @RequestParam(required = false)  Integer id) {
@@ -115,7 +118,7 @@ public class PedidoRest {
             }
         
         } 
-    }
+    }*/
 
 
     @GetMapping(path = "/{idPedido}/detalle/{id}")
