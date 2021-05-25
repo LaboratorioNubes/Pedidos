@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.tomcat.util.http.parser.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,14 +21,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import io.netty.handler.codec.http.HttpMethod;
 import isi.dan.laboratorios.danmspedidos.domain.DetallePedido;
 import isi.dan.laboratorios.danmspedidos.domain.Pedido;
 
-import isi.dan.laboratorios.danmspedidos.domain.Pedido;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 
 @RestController
 @RequestMapping(PedidoRest.API_PEDIDO)
+@Api(value = "PedidoRest", description = "Permite gestionar los pedidos de la empresa")
 public class PedidoRest {
     static final String API_PEDIDO = "/api/pedido";
     
@@ -34,6 +46,7 @@ public class PedidoRest {
     private static Integer indexPedido;
 
     @GetMapping(path = "/{idPedido}")
+    @ApiOperation(value = "Retorna un pedido por id")
     public ResponseEntity<Pedido> pedidoPorId(@PathVariable Integer idPedido){
 
         Optional<Pedido> p =  listaPedidos
@@ -44,12 +57,14 @@ public class PedidoRest {
     }
 
     @GetMapping
+    @ApiOperation(value = "Retorna una lista de todos los pedidos")
     public ResponseEntity<List<Pedido>> todos(){
         return ResponseEntity.ok(listaPedidos);
     }
 
     //GET por id de obra
     @GetMapping(path = "/obra/{idObra}")
+    @ApiOperation(value = "Busca una lista de pedidos por id de Obra")   //VER Y TERMINAR
     public ResponseEntity<Pedido> pedidoPorIdObra(@PathVariable Integer idObra){
 
         Optional<Pedido> p =  listaPedidos
@@ -60,20 +75,51 @@ public class PedidoRest {
     }
 
     //FALTA GET Por Cuit y/o ID de Cliente
-   /* @GetMapping(path = "/nombre")
+    @GetMapping(path = "/cuitIdCliente")
+    @ApiOperation(value = "Busca una lista de pedidos por cuit de cliente y/o ID de cliente. example:http://localhost:8080/api/pedido/cuitIdCliente?cuit=20406461272 ")
     @ResponseBody
-    public ResponseEntity<List<Pedido>> pedidoPorCuitOIdCliente(@RequestParam(required = false) Integer cuit, @RequestParam(required = false)  Integer id) {
+    public ResponseEntity<List<Pedido>> pedidoPorCuitOIdCliente(@RequestParam(required = false) String cuit, @RequestParam(required = false)  Integer id) {
+        Integer idCliente = null;
+        if(cuit != null) {
+            RestTemplate rest = new RestTemplate();
+            String url = "http://localhost:8080/api/cliente/cuit/"+cuit;
+            try {
+                ResponseEntity<ClienteDTO> respuesta = rest.exchange(
+                    url, HttpMethod.GET, null, ClienteDTO.class);
+                ClienteDTO response = respuesta.getBody();
+                idCliente = response.getId();
+            } catch (Exception e){
+                throw new RestClientException(HttpStatus.INTERNAL_SERVER_ERROR.toString(), e);
+            }
+        }
 
-        List<Pedido> o =  listaPedidos
-                .stream()
-                .filter(unPedido -> (unPedido.getCliente().getId().equals(id)) || (unPedido.getCliente().getCuit().equals(cuit)))
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(o);
-    }*/
+        if(id !=null || idCliente != null) {
+            Integer cliente = (id!=null) ? id : idCliente;
+            RestTemplate rest = new RestTemplate();
+            String url = "http://localhost:8080/api/obra/obras?clienteId="+cliente;
+            try {
+                ResponseEntity<List<ObraDTO>> respuesta = rest.exchange(
+                    url, HttpMethod.GET, null, ClienteDTO.class);
+                List<ObraDTO> obras = respuesta.getBody();
+                if(obras ==null || obras.isEmpty()) {
+                    return ResponseEntity.notFound().build();
+                }
+                List<Integer> obrasId = obras.stream().map(ObraDTO::getId).collect(Collectors.toList());
+                List<Pedido> o =  listaPedidos
+                    .stream()
+                    .filter(unPedido -> obrasId.contains(unPedido.getObra().getId()))
+                    .collect(Collectors.toList());
+                return ResponseEntity.ok(o);
+            } catch (Exception e){
+                throw new RestClientException(HttpStatus.INTERNAL_SERVER_ERROR.toString(), e);
+            }
+        
+        } 
+    }
 
 
     @GetMapping(path = "/{idPedido}/detalle/{id}")
+    @ApiOperation(value = "Busca un detalle de pedido por id de pedido e id de detalle dados")
     public ResponseEntity<DetallePedido> pedidoPorDetalle(@PathVariable Integer idPedido, @PathVariable Integer id){
 
         DetallePedido detallePedido = new DetallePedido();
@@ -92,6 +138,7 @@ public class PedidoRest {
     }
 
     @PostMapping
+    @ApiOperation(value = "Da de alta un pedido")
     public ResponseEntity<Pedido> crear(@RequestBody Pedido nuevo){
     	System.out.println("Crear pedido "+ nuevo);
         nuevo.setId(ID_GEN++);
@@ -100,6 +147,7 @@ public class PedidoRest {
     }
 
     @PostMapping(path = "/{idPedido}/detalle")
+    @ApiOperation(value = "Da de alta un detallePedido y lo añade un pedido por idPedido")
     public ResponseEntity<Pedido> crearItem(@RequestBody DetallePedido nuevoItem, @PathVariable Integer idPedido){
     	System.out.println("Crear item " + nuevoItem + " a pedido de id: " + idPedido);
         Pedido pedido = null;
@@ -116,6 +164,13 @@ public class PedidoRest {
     }
 
     @PutMapping(path = "/{idPedido}")
+    @ApiOperation(value = "Actualiza un pedido")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Actualizado correctamente"),
+        @ApiResponse(code = 401, message = "No autorizado"),
+        @ApiResponse(code = 403, message = "Prohibido"),
+        @ApiResponse(code = 404, message = "El ID no existe")
+    })
     public ResponseEntity<Pedido> actualizar(@RequestBody Pedido nuevo,  @PathVariable Integer idPedido) {
         OptionalInt indexOpt =   IntStream.range(0, listaPedidos.size())
         .filter(i -> listaPedidos.get(i).getId().equals(idPedido))
@@ -130,6 +185,7 @@ public class PedidoRest {
     }
 
     @DeleteMapping(path = "/{idPedido}")
+    @ApiOperation(value = "Elimina un pedido")
     public ResponseEntity<Pedido> borrar(@PathVariable Integer idPedido){
         OptionalInt indexOpt =   IntStream.range(0, listaPedidos.size())
         .filter(i -> listaPedidos.get(i).getId().equals(idPedido))
@@ -144,6 +200,7 @@ public class PedidoRest {
     }
 
     @DeleteMapping(path = "/{idPedido}/detalle/{id}")
+    @ApiOperation(value = "Elimina un detallePedido perteneciente a un determinado pedido. example:http://localhost:8080/api/pedido/5/detalle/11")
     public ResponseEntity<Pedido> borrarDetalle(@PathVariable Integer idPedido, @PathVariable Integer id){
         //final int indexPedido = 0;
         for(int i=0; i<listaPedidos.size(); i++){
