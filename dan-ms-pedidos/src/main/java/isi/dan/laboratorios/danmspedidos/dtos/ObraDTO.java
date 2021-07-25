@@ -1,4 +1,4 @@
-package isi.dan.laboratorios.danmspedidos.domain;
+package isi.dan.laboratorios.danmspedidos.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EstadoPedido {
+public class ObraDTO {
     private Integer id;
-	private String estado;
+	private String descripcion;
 }
