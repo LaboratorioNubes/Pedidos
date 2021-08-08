@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import frsf.isi.dan.InMemoryRepository;
 
 @Repository
-public class PedidoRepository  extends InMemoryRepository<Pedido> {
+public class PedidoRepository extends InMemoryRepository<Pedido> {
 
     @Override
     public Integer getId(Pedido arg0) {
