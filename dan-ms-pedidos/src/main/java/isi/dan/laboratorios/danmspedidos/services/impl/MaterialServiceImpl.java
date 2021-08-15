@@ -1,12 +1,11 @@
 package isi.dan.laboratorios.danmspedidos.services.impl;
 
-
 import isi.dan.laboratorios.danmspedidos.domain.Producto;
 import isi.dan.laboratorios.danmspedidos.dtos.responses.ProductoResponseDTO;
 import isi.dan.laboratorios.danmspedidos.exceptions.BadRequestException;
 import isi.dan.laboratorios.danmspedidos.exceptions.DataNotFoundException;
 import isi.dan.laboratorios.danmspedidos.repositories.ProductoRepository;
-import isi.dan.laboratorios.danmspedidos.services.MaterialService;
+import isi.dan.laboratorios.danmspedidos.services.IMaterialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,7 @@ import isi.dan.laboratorios.danmspedidos.configuration.Constantes;
 import java.util.Optional;
 
 @Service
-public class MaterialServiceImpl implements MaterialService {
+public class MaterialServiceImpl implements IMaterialService {
 
     @Autowired
     ProductoRepository productoRepository;

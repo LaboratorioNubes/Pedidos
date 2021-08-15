@@ -1,11 +1,11 @@
 package isi.dan.laboratorios.danmspedidos.services.impl;
 
 import isi.dan.laboratorios.danmspedidos.dtos.ObraDTO;
-import isi.dan.laboratorios.danmspedidos.services.ClienteService;
+import isi.dan.laboratorios.danmspedidos.services.IClienteService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ClienteServiceImpl implements ClienteService {
+public class ClienteServiceImpl implements IClienteService {
 
     @Override
     public Double deudaCliente(Integer idObra) {

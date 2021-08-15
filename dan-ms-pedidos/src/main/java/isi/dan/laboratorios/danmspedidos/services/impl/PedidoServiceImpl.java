@@ -8,9 +8,9 @@ import isi.dan.laboratorios.danmspedidos.dtos.responses.ProductoResponseDTO;
 import isi.dan.laboratorios.danmspedidos.enums.Estado;
 import isi.dan.laboratorios.danmspedidos.exceptions.DataNotFoundException;
 import isi.dan.laboratorios.danmspedidos.repositories.PedidoRepository;
-import isi.dan.laboratorios.danmspedidos.services.ClienteService;
-import isi.dan.laboratorios.danmspedidos.services.MaterialService;
-import isi.dan.laboratorios.danmspedidos.services.PedidoService;
+import isi.dan.laboratorios.danmspedidos.services.IClienteService;
+import isi.dan.laboratorios.danmspedidos.services.IMaterialService;
+import isi.dan.laboratorios.danmspedidos.services.IPedidoService;
 import isi.dan.laboratorios.danmspedidos.utils.ListMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,16 +24,16 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
-public class PedidoServiceImpl implements PedidoService {
+public class PedidoServiceImpl implements IPedidoService {
 
     @Autowired
-    MaterialService materialSrv;
+    IMaterialService materialSrv;
 
     @Autowired
     PedidoRepository repo;
 
     @Autowired
-    ClienteService clienteSrv;
+    IClienteService clienteSrv;
 
     @Autowired
     ModelMapper modelMapper;

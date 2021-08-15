@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
-public interface PedidoService {
+public interface IPedidoService {
     public PedidoDTO crearPedido(PedidoRequestDTO pedido);
     public ResponseEntity<PedidoDTO> actualizarPedido(PedidoDTO pedido, Integer idPedido);
     public ResponseEntity<PedidoDTO> borrarPedido(Integer id);
