@@ -1,11 +1,9 @@
 package isi.dan.laboratorios.danmspedidos.rest;
 
 import java.util.List;
-import java.util.OptionalInt;
-import java.util.stream.IntStream;
-
 import isi.dan.laboratorios.danmspedidos.dtos.DetallePedidoDTO;
 import isi.dan.laboratorios.danmspedidos.dtos.PedidoDTO;
+import isi.dan.laboratorios.danmspedidos.dtos.requests.PedidoRequestDTO;
 import isi.dan.laboratorios.danmspedidos.services.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +15,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import isi.dan.laboratorios.danmspedidos.domain.DetallePedido;
-import isi.dan.laboratorios.danmspedidos.domain.Pedido;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-
 
 @RestController
 @RequestMapping(PedidoRest.API_PEDIDO)
@@ -57,53 +50,6 @@ public class PedidoRest {
         return ResponseEntity.ok(pedidoService.getPedidoPorIdObra(idObra));
     }
 
-    //FALTA GET Por Cuit y/o ID de Cliente
-    /**
-     * Arreglar exchange
-     */
-    /*@GetMapping(path = "/cuitIdCliente")
-    @ApiOperation(value = "Busca una lista de pedidos por cuit de cliente y/o ID de cliente. example:http://localhost:8080/api/pedido/cuitIdCliente?cuit=20406461272 ")
-    @ResponseBody
-    public ResponseEntity<List<Pedido>> pedidoPorCuitOIdCliente(@RequestParam(required = false) String cuit, @RequestParam(required = false)  Integer id) {
-        Integer idCliente = null;
-        if(cuit != null) {
-            RestTemplate rest = new RestTemplate();
-            String url = "http://localhost:8080/api/cliente/cuit/"+cuit;
-            try {
-                ResponseEntity<ClienteDTO> respuesta = rest.exchange(
-                    url, HttpMethod.GET, null, ClienteDTO.class);
-                ClienteDTO response = respuesta.getBody();
-                idCliente = response.getId();
-            } catch (Exception e){
-                throw new RestClientException(HttpStatus.INTERNAL_SERVER_ERROR.toString(), e);
-            }
-        }
-
-        if(id !=null || idCliente != null) {
-            Integer cliente = (id!=null) ? id : idCliente;
-            RestTemplate rest = new RestTemplate();
-            String url = "http://localhost:8080/api/obra/obras?clienteId="+cliente;
-            try {
-                ResponseEntity<List<ObraDTO>> respuesta = rest.exchange(
-                    url, HttpMethod.GET, null, ClienteDTO.class);
-                List<ObraDTO> obras = respuesta.getBody();
-                if(obras ==null || obras.isEmpty()) {
-                    return ResponseEntity.notFound().build();
-                }
-                List<Integer> obrasId = obras.stream().map(ObraDTO::getId).collect(Collectors.toList());
-                List<Pedido> o =  listaPedidos
-                    .stream()
-                    .filter(unPedido -> obrasId.contains(unPedido.getObra().getId()))
-                    .collect(Collectors.toList());
-                return ResponseEntity.ok(o);
-            } catch (Exception e){
-                throw new RestClientException(HttpStatus.INTERNAL_SERVER_ERROR.toString(), e);
-            }
-        
-        } 
-    }*/
-
-
     @GetMapping(path = "/{idPedido}/detalle/{id}")
     @ApiOperation(value = "Busca un detalle de pedido por id de pedido e id de detalle dados")
     public ResponseEntity<DetallePedidoDTO> getPedidoPorDetalle(@PathVariable Integer idPedido, @PathVariable Integer id){
@@ -112,8 +58,8 @@ public class PedidoRest {
 
     @PostMapping
     @ApiOperation(value = "Da de alta un pedido")
-    public ResponseEntity<PedidoDTO> crear(@RequestBody PedidoDTO nuevo){
-        return ResponseEntity.ok(pedidoService.crearPedido(nuevo));
+    public ResponseEntity<PedidoDTO> crear(@RequestBody PedidoRequestDTO pedido){
+        return ResponseEntity.ok(pedidoService.crearPedido(pedido));
     }
 
     @PostMapping(path = "/{idPedido}/detalle")
