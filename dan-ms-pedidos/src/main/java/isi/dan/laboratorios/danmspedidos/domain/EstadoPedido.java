@@ -1,5 +1,6 @@
 package isi.dan.laboratorios.danmspedidos.domain;
 
+import isi.dan.laboratorios.danmspedidos.enums.Estado;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,6 @@ public class EstadoPedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-	private String estado;
+    @Enumerated(value = EnumType.STRING)
+	private Estado estado;
 }

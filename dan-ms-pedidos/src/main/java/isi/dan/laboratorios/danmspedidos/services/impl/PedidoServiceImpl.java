@@ -2,14 +2,15 @@ package isi.dan.laboratorios.danmspedidos.services.impl;
 
 import isi.dan.laboratorios.danmspedidos.domain.*;
 import isi.dan.laboratorios.danmspedidos.dtos.DetallePedidoDTO;
-import isi.dan.laboratorios.danmspedidos.dtos.EstadoPedidoDTO;
-import isi.dan.laboratorios.danmspedidos.dtos.ObraDTO;
 import isi.dan.laboratorios.danmspedidos.dtos.PedidoDTO;
+import isi.dan.laboratorios.danmspedidos.dtos.requests.PedidoRequestDTO;
+import isi.dan.laboratorios.danmspedidos.dtos.responses.ProductoResponseDTO;
+import isi.dan.laboratorios.danmspedidos.enums.Estado;
 import isi.dan.laboratorios.danmspedidos.exceptions.DataNotFoundException;
 import isi.dan.laboratorios.danmspedidos.repositories.PedidoRepository;
-import isi.dan.laboratorios.danmspedidos.services.ClienteService;
-import isi.dan.laboratorios.danmspedidos.services.MaterialService;
-import isi.dan.laboratorios.danmspedidos.services.PedidoService;
+import isi.dan.laboratorios.danmspedidos.services.IClienteService;
+import isi.dan.laboratorios.danmspedidos.services.IMaterialService;
+import isi.dan.laboratorios.danmspedidos.services.IPedidoService;
 import isi.dan.laboratorios.danmspedidos.utils.ListMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,19 +20,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
-public class PedidoServiceImpl implements PedidoService {
+public class PedidoServiceImpl implements IPedidoService {
 
     @Autowired
-    MaterialService materialSrv;
+    IMaterialService materialSrv;
 
     @Autowired
     PedidoRepository repo;
 
     @Autowired
-    ClienteService clienteSrv;
+    IClienteService clienteSrv;
 
     @Autowired
     ModelMapper modelMapper;
@@ -42,35 +44,37 @@ public class PedidoServiceImpl implements PedidoService {
     private static Integer indexPedido;
 
     @Override
-    public PedidoDTO crearPedido(PedidoDTO p) {
-        System.out.println("HOLA PEDIDO "+p);
-        boolean hayStock = p.getDetallesPedido()
+    public PedidoDTO crearPedido(PedidoRequestDTO pedido) {
+        List<ProductoResponseDTO> productList = pedido.getDetallesPedido()
                 .stream()
-                .allMatch(dp -> verificarStock(dp.getProducto(),dp.getCantidad()));
+                .map(dp -> verificarStock(dp.getIdProducto(),dp.getCantidad()))
+                .collect(Collectors.toList());
 
-        Double totalOrden = p.getDetallesPedido()
+        Double totalOrden = pedido.getDetallesPedido()
                 .stream()
-                .mapToDouble( dp -> dp.getCantidad() * dp.getPrecio())
+                .mapToDouble( dp -> dp.getCantidad() * (productList.stream()
+                                                        .filter(p -> p.getId().equals(dp.getIdProducto()))
+                                                        .findFirst()).get().getPrecio())
                 .sum();
 
-
-        Double saldoCliente = clienteSrv.deudaCliente(p.getObra());
+        Double saldoCliente = clienteSrv.deudaCliente(pedido.getIdObra());
         Double nuevoSaldo = saldoCliente - totalOrden;
 
-        Boolean generaDeuda= nuevoSaldo<0;
-        if(hayStock ) {
-            if(!generaDeuda || (generaDeuda && this.esDeBajoRiesgo(p.getObra(),nuevoSaldo) ))  {
-                p.setEstado(new EstadoPedidoDTO(1,"ACEPTADO"));
+        Pedido p = new Pedido();
+
+        Boolean generaDeuda = nuevoSaldo<0;
+
+        if(!productList.isEmpty()) {
+            if(!generaDeuda || (generaDeuda && this.esDeBajoRiesgo(pedido.getIdObra(),nuevoSaldo)))  {
+                p.setEstado(new EstadoPedido(1, Estado.ACEPTADO));
             } else {
                 throw new RuntimeException("No tiene aprobacion crediticia");
             }
         } else {
-            p.setEstado(new EstadoPedidoDTO(2,"PENDIENTE"));
+            p.setEstado(new EstadoPedido(2,Estado.PENDIENTE));
         }
 
-        repo.save(modelMapper.map(p, Pedido.class));
-
-        return p;
+        return modelMapper.map(repo.save(p), PedidoDTO.class);
     }
 
     @Override
@@ -208,15 +212,13 @@ public class PedidoServiceImpl implements PedidoService {
     }
 
 
-    private boolean verificarStock(Producto p, Integer cantidad) {
-        return materialSrv.stockDisponible(p)>=cantidad;
+    private ProductoResponseDTO verificarStock(Integer idProducto, Integer cantidad) {
+        return materialSrv.stockDisponible(idProducto, cantidad);
     }
 
-    private boolean esDeBajoRiesgo(ObraDTO o, Double saldoNuevo) {
-        Double maximoSaldoNegativo = clienteSrv.maximoSaldoNegativo(o);
+    private boolean esDeBajoRiesgo(Integer idObra, Double saldoNuevo) {
+        Double maximoSaldoNegativo = clienteSrv.maximoSaldoNegativo(idObra);
         Boolean tieneSaldo = Math.abs(saldoNuevo) < maximoSaldoNegativo;
         return tieneSaldo;
     }
-
-
 }

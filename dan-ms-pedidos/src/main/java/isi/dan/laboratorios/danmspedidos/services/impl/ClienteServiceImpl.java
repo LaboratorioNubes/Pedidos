@@ -1,15 +1,14 @@
 package isi.dan.laboratorios.danmspedidos.services.impl;
 
-import isi.dan.laboratorios.danmspedidos.domain.Obra;
 import isi.dan.laboratorios.danmspedidos.dtos.ObraDTO;
-import isi.dan.laboratorios.danmspedidos.services.ClienteService;
+import isi.dan.laboratorios.danmspedidos.services.IClienteService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ClienteServiceImpl implements ClienteService {
+public class ClienteServiceImpl implements IClienteService {
 
     @Override
-    public Double deudaCliente(ObraDTO id) {
+    public Double deudaCliente(Integer idObra) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -21,7 +20,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public Double maximoSaldoNegativo(ObraDTO id) {
+    public Double maximoSaldoNegativo(Integer id) {
         // TODO Auto-generated method stub
         return null;
     }
