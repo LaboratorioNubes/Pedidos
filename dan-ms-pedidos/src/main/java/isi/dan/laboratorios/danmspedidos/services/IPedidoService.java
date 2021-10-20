@@ -8,13 +8,13 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface IPedidoService {
-    public PedidoDTO crearPedido(PedidoRequestDTO pedido);
-    public ResponseEntity<PedidoDTO> actualizarPedido(PedidoDTO pedido, Integer idPedido);
-    public ResponseEntity<PedidoDTO> borrarPedido(Integer id);
-    public ResponseEntity<PedidoDTO> borrarDetalleDePedido(Integer id, Integer idDetalle);
-    public PedidoDTO getPedidoPorId(Integer id);
-    public PedidoDTO getPedidoPorIdObra(Integer id);
-    public List<PedidoDTO> getAll();
-    public DetallePedidoDTO getPedidoPorDetalle(Integer idPedido, Integer id);
-    public PedidoDTO crearItem(DetallePedidoDTO nuevoItem, Integer idPedido);
+    void crearPedido(PedidoRequestDTO pedido);
+    ResponseEntity<PedidoDTO> actualizarPedido(PedidoDTO pedido, Integer idPedido);
+    ResponseEntity<PedidoDTO> borrarPedido(Integer id);
+    ResponseEntity<PedidoDTO> borrarDetalleDePedido(Integer id, Integer idDetalle);
+    PedidoDTO getPedidoPorId(Integer id);
+    PedidoDTO getPedidoPorIdObra(Integer id);
+    List<PedidoDTO> getAll();
+    DetallePedidoDTO getPedidoPorDetalle(Integer idPedido, Integer id);
+    PedidoDTO crearItem(DetallePedidoDTO nuevoItem, Integer idPedido);
 }

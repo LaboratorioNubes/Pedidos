@@ -8,9 +8,8 @@ import org.springframework.stereotype.Service;
 public class ClienteServiceImpl implements IClienteService {
 
     @Override
-    public Double deudaCliente(Integer idObra) {
-        // TODO Auto-generated method stub
-        return null;
+    public Double deudaCliente(String idObra) {
+        return 100000.0;
     }
 
     @Override
@@ -20,9 +19,8 @@ public class ClienteServiceImpl implements IClienteService {
     }
 
     @Override
-    public Double maximoSaldoNegativo(Integer id) {
-        // TODO Auto-generated method stub
-        return null;
+    public Double maximoSaldoNegativo(String id) {
+        return 100.0;
     }
 
 }

@@ -74,13 +74,11 @@
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
 
-		
-		<!-- Eureka client -->
+		<!-- Eureka client
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-			<version>3.0.3</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- Actuator & Micrometer for Prometheus -->
 		 <dependency>

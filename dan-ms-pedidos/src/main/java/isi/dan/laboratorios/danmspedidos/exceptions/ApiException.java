@@ -12,4 +12,9 @@ public class ApiException extends RuntimeException {
         this.error = new ApiError(this.getClass().getSimpleName(), message);
         this.status = status;
     }
+
+    public ApiException(ApiError apiError, HttpStatus status) {
+        this.error = apiError;
+        this.status = status;
+    }
 }

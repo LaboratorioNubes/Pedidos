@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -17,7 +18,7 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-	private Instant fechaPedido;
+	private Date fechaPedido;
 
 	@OneToMany
     private List<DetallePedido> detallesPedido;

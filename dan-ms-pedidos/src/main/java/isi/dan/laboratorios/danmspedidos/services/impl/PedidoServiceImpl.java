@@ -16,10 +16,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
+
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -44,20 +43,19 @@ public class PedidoServiceImpl implements IPedidoService {
     private static Integer indexPedido;
 
     @Override
-    public PedidoDTO crearPedido(PedidoRequestDTO pedido) {
-        List<ProductoResponseDTO> productList = pedido.getDetallesPedido()
-                .stream()
-                .map(dp -> verificarStock(dp.getIdProducto(),dp.getCantidad()))
-                .collect(Collectors.toList());
+    public void crearPedido(PedidoRequestDTO pedido) {
 
-        Double totalOrden = pedido.getDetallesPedido()
+        List<String> idProductos = pedido.getItems().stream().map(p -> p.getProducto()).collect(Collectors.toList());
+        List<ProductoResponseDTO> productList = materialSrv.getProducts(idProductos);
+
+        Double totalOrden = pedido.getItems()
                 .stream()
-                .mapToDouble( dp -> dp.getCantidad() * (productList.stream()
-                                                        .filter(p -> p.getId().equals(dp.getIdProducto()))
+                .mapToDouble(dp -> dp.getCantidad() * (productList.stream()
+                                                        .filter(p -> p.getNombre().equals(dp.getProducto()))
                                                         .findFirst()).get().getPrecio())
                 .sum();
 
-        Double saldoCliente = clienteSrv.deudaCliente(pedido.getIdObra());
+        Double saldoCliente = clienteSrv.deudaCliente(pedido.getObra());
         Double nuevoSaldo = saldoCliente - totalOrden;
 
         Pedido p = new Pedido();
@@ -65,7 +63,7 @@ public class PedidoServiceImpl implements IPedidoService {
         Boolean generaDeuda = nuevoSaldo<0;
 
         if(!productList.isEmpty()) {
-            if(!generaDeuda || (generaDeuda && this.esDeBajoRiesgo(pedido.getIdObra(),nuevoSaldo)))  {
+            if(!generaDeuda || (generaDeuda && this.esDeBajoRiesgo(pedido.getObra(),nuevoSaldo))){
                 p.setEstado(new EstadoPedido(1, Estado.ACEPTADO));
             } else {
                 throw new RuntimeException("No tiene aprobacion crediticia");
@@ -74,7 +72,8 @@ public class PedidoServiceImpl implements IPedidoService {
             p.setEstado(new EstadoPedido(2,Estado.PENDIENTE));
         }
 
-        return modelMapper.map(repo.save(p), PedidoDTO.class);
+        p.setFechaPedido(Calendar.getInstance().getTime());
+        repo.save(p);
     }
 
     @Override
@@ -216,7 +215,7 @@ public class PedidoServiceImpl implements IPedidoService {
         return materialSrv.stockDisponible(idProducto, cantidad);
     }
 
-    private boolean esDeBajoRiesgo(Integer idObra, Double saldoNuevo) {
+    private boolean esDeBajoRiesgo(String idObra, Double saldoNuevo) {
         Double maximoSaldoNegativo = clienteSrv.maximoSaldoNegativo(idObra);
         Boolean tieneSaldo = Math.abs(saldoNuevo) < maximoSaldoNegativo;
         return tieneSaldo;

@@ -9,14 +9,7 @@ import isi.dan.laboratorios.danmspedidos.dtos.requests.PedidoRequestDTO;
 import isi.dan.laboratorios.danmspedidos.services.IPedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -24,6 +17,7 @@ import io.swagger.annotations.ApiResponses;
 
 @RestController
 @RequestMapping(Constantes.API_PEDIDO)
+@CrossOrigin
 @Api(value = "PedidoRest", description = "Permite gestionar los pedidos de la empresa")
 public class PedidoRest {
 
@@ -58,8 +52,8 @@ public class PedidoRest {
 
     @PostMapping
     @ApiOperation(value = "Da de alta un pedido")
-    public ResponseEntity<PedidoDTO> crear(@RequestBody PedidoRequestDTO pedido){
-        return ResponseEntity.ok(IPedidoService.crearPedido(pedido));
+    public void crear(@RequestBody PedidoRequestDTO pedido){
+        IPedidoService.crearPedido(pedido);
     }
 
     @PostMapping(path = "/{idPedido}/detalle")
